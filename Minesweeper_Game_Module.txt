@@ -1,0 +1,52 @@
+Game Module: Minesweeper
+
+1. Module Overview
+Minesweeper is a classic logic-based puzzle game integrated into the GameHub platform.
+The main purpose of this module is to challenge the player’s logical reasoning, pattern recognition,
+and decision-making skills. Within GameHub, Minesweeper serves as a strategic and cognitive mini-game,
+offering a slower-paced but intellectually engaging contrast to action-oriented games.
+
+2. Functional Requirements
+
+Game Modes:
+- Single Player Mode
+- Difficulty Levels: Beginner, Intermediate, Advanced (defined by grid size and number of mines)
+
+Game Rules:
+- The game board consists of a grid with hidden mines.
+- The player reveals cells by clicking on them.
+- Revealing a mine ends the game.
+- Revealing a safe cell displays the number of adjacent mines.
+- Cells with zero adjacent mines automatically reveal neighboring cells.
+- The game is won when all non-mine cells are revealed.
+
+Constraints:
+- Mines are placed randomly at the start of each game.
+- The first revealed cell is guaranteed not to be a mine.
+- The player cannot reveal already opened or flagged cells.
+- The game ends immediately upon clicking a mine.
+
+3. Technical Implementation
+
+Data Structures:
+- 2D Array / Grid to represent the game board.
+- Cell object attributes: isMine, isRevealed, isFlagged, adjacentMineCount.
+
+Algorithms:
+- Mine placement algorithm excluding the first-click cell.
+- Adjacency calculation algorithm.
+- Flood fill algorithm (DFS/BFS) for empty cell expansion.
+- Win condition checking algorithm.
+
+Unity Components:
+- GameObject, MonoBehaviour, Button, Canvas
+- Text/TMP_Text for UI elements
+- SceneManager for scene transitions
+
+4. User Interface (UI) Design
+
+Visual Layout:
+- Main Menu: Start Game, Difficulty Selection, Exit to GameHub
+- Game Screen: Grid board, mine counter, timer
+- End Game Screen: Win/Lose message, final time, restart option
+
