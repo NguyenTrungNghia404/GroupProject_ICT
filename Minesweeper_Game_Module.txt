@@ -1,52 +1,64 @@
-Game Module: Minesweeper
+GameHub Module Documentation: Minesweeper
 
 1. Module Overview
-Minesweeper is a classic logic-based puzzle game integrated into the GameHub platform.
-The main purpose of this module is to challenge the player’s logical reasoning, pattern recognition,
-and decision-making skills. Within GameHub, Minesweeper serves as a strategic and cognitive mini-game,
-offering a slower-paced but intellectually engaging contrast to action-oriented games.
+   - Genre: Logic Puzzle / Strategy.
+   - Purpose: A classic grid-based puzzle game where the player must clear a board containing hidden "mines" or bombs without detonating any of them, using deduction based on clues about the number of neighboring mines.
 
 2. Functional Requirements
-
-Game Modes:
-- Single Player Mode
-- Difficulty Levels: Beginner, Intermediate, Advanced (defined by grid size and number of mines)
-
-Game Rules:
-- The game board consists of a grid with hidden mines.
-- The player reveals cells by clicking on them.
-- Revealing a mine ends the game.
-- Revealing a safe cell displays the number of adjacent mines.
-- Cells with zero adjacent mines automatically reveal neighboring cells.
-- The game is won when all non-mine cells are revealed.
-
-Constraints:
-- Mines are placed randomly at the start of each game.
-- The first revealed cell is guaranteed not to be a mine.
-- The player cannot reveal already opened or flagged cells.
-- The game ends immediately upon clicking a mine.
+   - Core Loop: The game starts with a covered grid. The player reveals cells one by one.
+   - Rules:
+     * Clicking a mine ends the game immediately (Loss).
+     * Clicking a safe cell reveals a number indicating how many mines are adjacent (0-8).
+     * If a cell has 0 adjacent mines, it automatically reveals all adjacent empty cells (Cascading/Flood Fill).
+     * The game is won when all non-mine cells are revealed.
+   - Constraints:
+     * Players must be able to "Flag" cells they suspect are mines to prevent accidental clicking.
+     * The first click should never be a mine.
 
 3. Technical Implementation
+   A. Core Architecture & Components
+      - Game.cs (Game Manager):
+        * Role: Singleton or central manager handling the high-level state machine.
+        * State Management: Tracks GameState (e.g., Menu, Playing, GameOver, Victory).
+        * Responsibilities: Handles the timer, mine counter, and processes the Win/Loss conditions triggered by the Board.
+      - Board.cs (Grid Logic):
+        * Role: Manages the data representation of the grid.
+        * Data Structure: A 2D array or List of Cell objects (e.g., Cell[,] grid).
+        * Unity Component: Likely interfaces with UnityEngine.TilemapModule to render the grid efficiently using a Tilemap rather than individual GameObjects.
+      - Cell.cs (Data Unit):
+        * Role: Represents a single tile.
+        * Properties:
+          - Vector3Int position: Coordinate on the grid.
+          - Type: Enum (Empty, Mine, Number).
+          - State: Enum (Covered, Revealed, Flagged).
+          - int adjacentMines: Cached count of neighboring mines.
 
-Data Structures:
-- 2D Array / Grid to represent the game board.
-- Cell object attributes: isMine, isRevealed, isFlagged, adjacentMineCount.
+   B. Key Algorithms
+      1. Board Generation (Fisher-Yates Shuffle): To ensure random mine placement, the board instantiates empty cells, places mines, and shuffles positions before mapping to the 2D grid.
+      2. Flood Fill (Recursive Reveal): When a cell with 0 adjacent mines is clicked, a recursive function checks all 8 neighbors. If a neighbor is not a mine and not revealed, it reveals it. If that neighbor is also a zero, recursion continues.
+      3. Adjacency Calculation: Pre-calculates adjacent mines for every cell during setup by iterating through mines and incrementing neighbors' counters.
 
-Algorithms:
-- Mine placement algorithm excluding the first-click cell.
-- Adjacency calculation algorithm.
-- Flood fill algorithm (DFS/BFS) for empty cell expansion.
-- Win condition checking algorithm.
-
-Unity Components:
-- GameObject, MonoBehaviour, Button, Canvas
-- Text/TMP_Text for UI elements
-- SceneManager for scene transitions
+   C. Unity Integration
+      - Input Handling: Uses Unity.InputSystem. Maps Mouse/LeftButton to "Reveal" and Mouse/RightButton to "Flag". Game.cs performs Raycast/Tilemap lookup on click.
+      - Rendering: Uses Tilemap and SpriteRenderer layers. One layer for "Cover" (unrevealed sprites), background layer for "Ground" (numbers/mines).
 
 4. User Interface (UI) Design
+   A. Visual Layer (HUD)
+      - Header / Status Bar:
+        * Mine Counter: Digital display showing Total Mines - Flags Placed.
+        * Face Button (Reset): Interactive icon reflecting state (Neutral, O-face on click, Sunglasses on win, Dead on loss).
+        * Timer: Increasing integer counter for seconds elapsed.
 
-Visual Layout:
-- Main Menu: Start Game, Difficulty Selection, Exit to GameHub
-- Game Screen: Grid board, mine counter, timer
-- End Game Screen: Win/Lose message, final time, restart option
+   B. Interactive Elements (Grid)
+      - Cell States:
+        * Covered: Raised button sprite.
+        * Revealed (Empty): Flat/depressed sprite.
+        * Revealed (Number): Color-coded integers (1: Blue, 2: Green, 3: Red, 4: Dark Blue).
+        * Flagged: Cell overlayed with a flag icon.
+        * Exploded Mine: Mine on red background.
 
+   C. Feedback Mechanisms
+      - Input Feedback: Hover effects and immediate sprite swaps on click. Input locks on game over.
+      - Game Over Screens:
+        * Victory: Modal popup with "Time Taken" and "Play Again".
+        * Defeat: Reveals all unflagged mines to verify the loss.
